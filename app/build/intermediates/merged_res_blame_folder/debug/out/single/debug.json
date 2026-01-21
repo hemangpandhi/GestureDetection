@@ -1,0 +1,18 @@
+[
+    {
+        "merged": "com.example.gesturecontrol.app-merged_res-38:/layout_custom_spinner_dropdown_item.xml.flat",
+        "source": "com.example.gesturecontrol.app-main-40:/layout/custom_spinner_dropdown_item.xml"
+    },
+    {
+        "merged": "com.example.gesturecontrol.app-merged_res-38:/layout_custom_spinner_item.xml.flat",
+        "source": "com.example.gesturecontrol.app-main-40:/layout/custom_spinner_item.xml"
+    },
+    {
+        "merged": "com.example.gesturecontrol.app-merged_res-38:/layout_activity_main.xml.flat",
+        "source": "com.example.gesturecontrol.app-main-40:/layout/activity_main.xml"
+    },
+    {
+        "merged": "com.example.gesturecontrol.app-merged_res-38:/drawable_bg_rounded.xml.flat",
+        "source": "com.example.gesturecontrol.app-main-40:/drawable/bg_rounded.xml"
+    }
+]

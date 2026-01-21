@@ -1,0 +1,63 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+}
+
+android {
+    namespace 'com.example.gesturecontrol'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.example.gesturecontrol"
+        minSdk 29 // Android 10 is common for simpler AAOS, but 8295 likely supports 13/14. Safe bet.
+        targetSdk 34
+        versionCode 1
+        versionName "1.0"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    testOptions {
+        unitTests.returnDefaultValues = true
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+}
+
+dependencies {
+    implementation 'androidx.core:core-ktx:1.12.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.11.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+
+    // MediaPipe for Gesture Recognition
+    implementation 'com.google.mediapipe:tasks-vision:0.10.14'
+
+    // AAOS / Car Library
+    implementation 'androidx.car.app:app:1.4.0'
+    
+    // For IP Camera (ExoPlayer could also be used, but let's keep it simple for now or use standard ImageView if we do MJPEG decoding manually)
+    // Actually, for better IP Cam support, ExoPlayer or a simple MJPEG decoder is good. 
+    // I'll add ExoPlayer just in case we get a proper RTSP stream.
+    implementation 'androidx.media3:media3-exoplayer:1.2.1'
+    implementation 'androidx.media3:media3-ui:1.2.1'
+
+    // For Coroutines
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
+
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.6.2'
+    implementation 'androidx.lifecycle:lifecycle-service:2.6.2'
+
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.mockito:mockito-core:5.7.0'
+    testImplementation 'org.mockito:mockito-inline:5.2.0' // For mocking final classes
+}

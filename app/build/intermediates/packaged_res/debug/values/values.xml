@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="auto_accent">#00E5FF</color>
+    <color name="auto_background">#121212</color>
+    <color name="auto_error">#D50000</color>
+    <color name="auto_success">#00C853</color>
+    <color name="auto_surface">#1E1E1E</color>
+    <color name="auto_text_primary">#FFFFFF</color>
+    <color name="auto_text_secondary">#DDDDDD</color>
+    <color name="black">#FF000000</color>
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_700">#FF3700B3</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
+    <color name="white">#FFFFFFFF</color>
+    <string name="app_name">Gesture Control</string>
+    <string name="status_connected">Camera Connected</string>
+    <string name="status_disconnected">Camera Disconnected</string>
+    <string name="status_searching">Searching for gestures...</string>
+    <style name="Theme.GestureControl" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/auto_accent</item>
+        <item name="android:statusBarColor">@color/black</item>
+    </style>
+</resources>

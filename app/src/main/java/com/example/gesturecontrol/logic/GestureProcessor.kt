@@ -1,0 +1,381 @@
+package com.example.gesturecontrol.logic
+
+import android.content.Context
+import android.graphics.Bitmap
+import android.util.Log
+import com.google.mediapipe.framework.image.BitmapImageBuilder
+import com.google.mediapipe.tasks.core.BaseOptions
+import com.google.mediapipe.tasks.vision.core.RunningMode
+import com.google.mediapipe.tasks.vision.gesturerecognizer.GestureRecognizer
+import com.google.mediapipe.tasks.vision.gesturerecognizer.GestureRecognizerResult
+import com.google.mediapipe.tasks.vision.facelandmarker.FaceLandmarker
+import com.google.mediapipe.tasks.vision.facelandmarker.FaceLandmarkerResult
+
+data class GestureFeedback(
+    val gestureName: String,
+    val score: Float,
+    val feedbackMessage: String,
+    val positionHint: String,
+    val isNightMode: Boolean = false,
+    val isSleeping: Boolean = false,
+    val isDemoMode: Boolean = false,
+    val mood: String = "Neutral"
+)
+
+class GestureProcessor(context: Context, private val listener: (GestureFeedback) -> Unit) {
+    private var gestureRecognizer: GestureRecognizer? = null
+    private var faceLandmarker: FaceLandmarker? = null
+    
+    // Phase 4: Demo Mode & Mood
+    var isDemoMode = true // Default for Customer Demo
+    private var currentMood = "Neutral"
+    private var frameCount = 0
+    
+    // Phase 3 State Variables
+    private var isSleeping = true 
+    private var lastWakeTime = 0L
+    private val WAKE_DURATION_MS = 10000L
+    private var wakeHoldStartTime = 0L
+    
+    private val handHistory = ArrayDeque<Pair<Long, Float>>()
+    private val HISTORY_SIZE = 10 
+
+    init {
+        setupGestureRecognizer(context)
+        setupFaceLandmarker(context)
+    }
+
+    private fun setupGestureRecognizer(context: Context) {
+        val baseOptions = BaseOptions.builder()
+            .setModelAssetPath("gesture_recognizer.task") 
+            .build()
+        val options = GestureRecognizer.GestureRecognizerOptions.builder()
+            .setBaseOptions(baseOptions)
+            .setRunningMode(RunningMode.IMAGE) 
+            .build()
+        try {
+            gestureRecognizer = GestureRecognizer.createFromOptions(context, options)
+        } catch (e: Exception) {
+            Log.e("GestureProcessor", "Error initializing recognizer: ${e.message}")
+        }
+    }
+    
+    private fun setupFaceLandmarker(context: Context) {
+        val baseOptions = BaseOptions.builder()
+            .setModelAssetPath("face_landmarker.task")
+            .build()
+        val options = FaceLandmarker.FaceLandmarkerOptions.builder()
+            .setBaseOptions(baseOptions)
+            .setRunningMode(RunningMode.IMAGE)
+            .setNumFaces(1)
+            .setOutputFaceBlendshapes(true) // CRITICAL: Needed for mood (smile/frown) detection
+            .build()
+        try {
+            faceLandmarker = FaceLandmarker.createFromOptions(context, options)
+        } catch (e: Exception) {
+             Log.e("GestureProcessor", "Error initializing face landmarker: ${e.message}")
+        }
+    }
+
+    private var lastInferenceTime = 0L
+
+    fun processingFrame(bitmap: Bitmap) {
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - lastInferenceTime < 100) return // Throttle to ~10 FPS
+        lastInferenceTime = currentTime
+        
+        if (gestureRecognizer == null) return
+        
+        try {
+            val mpImage = BitmapImageBuilder(bitmap).build()
+            val result = gestureRecognizer?.recognize(mpImage)
+            
+            // Run Face Detection every 10 frames (Throttle)
+            frameCount++
+            if (frameCount % 10 == 0) {
+                 val faceResult = faceLandmarker?.detect(mpImage)
+                 analyzeMood(faceResult)
+            }
+            
+            // Calculate Luminance
+            var lumSum = 0L
+            val cx = bitmap.width / 2
+            val cy = bitmap.height / 2
+            var pixels = 0
+            if (cx > 10 && cy > 10) {
+                 for (x in -5 until 5) {
+                    for (y in -5 until 5) {
+                        val pixel = bitmap.getPixel(cx + x, cy + y)
+                        val r = (pixel shr 16) and 0xFF
+                        val g = (pixel shr 8) and 0xFF
+                        val b = pixel and 0xFF
+                        lumSum += (0.299 * r + 0.587 * g + 0.114 * b).toLong()
+                        pixels++
+                    }
+                }
+            }
+            val avgLum = if (pixels > 0) lumSum / pixels else 255
+            
+            processResult(result, avgLum.toInt())
+        } catch (e: Exception) {
+            Log.e("GestureProcessor", "Inference error: ${e.message}")
+        }
+    }
+    
+    private fun analyzeMood(result: FaceLandmarkerResult?) {
+        result?.let {
+            if (it.faceBlendshapes().isPresent && it.faceBlendshapes().get().isNotEmpty()) {
+                val blendshapes = it.faceBlendshapes().get()[0]
+                
+                // Logic for Mood
+                // We access categories by name if available, or just index if we knew standard MP indices.
+                // MediaPipe standard blendshapes: 52 shapes.
+                // Simplified lookup:
+                var smileScore = 0f
+                var jawOpenScore = 0f
+                var browDownScore = 0f
+                var frownScore = 0f
+                
+                for (category in blendshapes) {
+                    val name = category.categoryName()
+                    val score = category.score()
+                    
+                    if (name == "mouthSmileLeft" || name == "mouthSmileRight") {
+                        smileScore += score
+                    }
+                    if (name == "jawOpen") {
+                        jawOpenScore = score
+                    }
+                    if (name == "browDownLeft" || name == "browDownRight") {
+                        browDownScore += score
+                    }
+                    if (name == "mouthFrownLeft" || name == "mouthFrownRight") {
+                        frownScore += score
+                    }
+                }
+                
+                // Thresholds & Priority
+                
+                Log.d("MoodDetection", "Smile: $smileScore, BrowDown: $browDownScore, Frown: $frownScore, JawOpen: $jawOpenScore")
+
+                if (smileScore > 0.5) {
+                    currentMood = "Happy :)"
+                } else if (browDownScore > 0.5) {
+                    currentMood = "Angry >:("
+                } else if (frownScore > 0.5) {
+                    currentMood = "Sad :("
+                } else if (jawOpenScore > 0.3) {
+                    currentMood = "Surprised :O"
+                } else {
+                    currentMood = "Neutral"
+                }
+            }
+        }
+    }
+
+    private fun processResult(result: GestureRecognizerResult?, luminance: Int) {
+        val currentTime = System.currentTimeMillis()
+        
+        // Demo Mode Bypass: Always active if isDemoMode
+        if (!isDemoMode && !isSleeping && (currentTime - lastWakeTime > WAKE_DURATION_MS)) {
+            isSleeping = true
+            wakeHoldStartTime = 0L 
+        } else if (isDemoMode) {
+            isSleeping = false // Force awake in demo mode
+        }
+
+        val isNightMode = luminance < 80
+        val activeThreshold = if (isNightMode) 0.4f else 0.6f
+
+        result?.let {
+            if (it.gestures().isNotEmpty()) {
+                val topGesture = it.gestures().first().first()
+                val score = topGesture.score()
+                var category = topGesture.categoryName() // Mutable for override
+                val landmarks = it.landmarks()[0]
+                var positionHint = "Centered"
+                var inDriverZone = true
+                var isStatic = false
+                
+                if (landmarks.isNotEmpty()) {
+                    val wrist = landmarks[0]
+                    val x = wrist.x()
+                    
+                    // Logic for Pointing Down
+                    val indexTip = landmarks[8]
+                    val indexMcp = landmarks[5]
+                    val middleTip = landmarks[12]
+                    val middleMcp = landmarks[9]
+                    val ringTip = landmarks[16]
+                    val ringMcp = landmarks[13]
+                    val pinkyTip = landmarks[20]
+                    val pinkyMcp = landmarks[17]
+                    
+                    // Define State Booleans (Restored)
+                    val isIndexUp = indexTip.y() < indexMcp.y()
+                    val isMiddleUp = middleTip.y() < middleMcp.y()
+                    val isRingUp = ringTip.y() < ringMcp.y()
+                    val isPinkyUp = pinkyTip.y() < pinkyMcp.y()
+
+                    // --- ADVANCED DIRECTIONAL LOGIC ---
+                    // ROBUST SCALE: Calculate Palm Size (Wrist to Index MCP) to normalize distances
+                    val palmDx = indexMcp.x() - wrist.x()
+                    val palmDy = indexMcp.y() - wrist.y()
+                    val palmSize = Math.sqrt((palmDx*palmDx + palmDy*palmDy).toDouble())
+                    
+                    // Extension Threshold: Finger must be nearly as long as the palm to be "Extended"
+                    // STRICTURE: Increased to 1.0 * PalmSize to filter out loose fists (Thumb Up false positives)
+                    val extensionThreshold = palmSize * 1.0 
+                    
+                    // Calculate vectors for Index and Middle fingers
+                    val idxDx = indexTip.x() - indexMcp.x()
+                    val idxDy = indexTip.y() - indexMcp.y()
+                    val midDx = middleTip.x() - middleMcp.x()
+                    val midDy = middleTip.y() - middleMcp.y()
+                    
+                    val idxLen = Math.sqrt((idxDx*idxDx + idxDy*idxDy).toDouble())
+                    val midLen = Math.sqrt((midDx*midDx + midDy*midDy).toDouble())
+                    
+                    val isIdxExt = idxLen > extensionThreshold
+                    val isMidExt = midLen > extensionThreshold
+                    
+                    // Thumb Check: Is Thumb Up? (Tip significantly above IP/MCP)
+                    // If MediaPipe says "Thumb_Up", we should respect it unless Index/Middle are CLEARLY pointing.
+                    // But in a Fist (Thumb Up), Index/Middle are folded (Short).
+                    // So just the `isIdxExt` check with high threshold should fix the "Thumb Up" false positive.
+                    
+                    if (isIdxExt && isMidExt && !isRingUp && !isPinkyUp) {
+                        // Both extended, others likely folded
+                        
+                        // Check Orientation
+                        if (Math.abs(idxDx) > Math.abs(idxDy)) {
+                            // Horizontal
+                            if (idxDx > 0.05) { 
+                                // dx > 0 means pointing to Image Right (User's Left if mirrored)
+                                Log.d("GestureProcessor", "Override: Two_Fingers_Left")
+                                category = "Two_Fingers_Left"
+                            } else if (idxDx < -0.05) {
+                                // dx < 0 means pointing to Image Left (User's Right if mirrored)
+                                Log.d("GestureProcessor", "Override: Two_Fingers_Right")
+                                category = "Two_Fingers_Right"
+                            }
+                        } else {
+                            // Vertical
+                            if (idxDy < -0.05) { // Up (Y decreases upwards)
+                                Log.d("GestureProcessor", "Override: Two_Fingers_Up")
+                                category = "Two_Fingers_Up"
+                            }
+                             // Removed Pointing_Down from Two Fingers logic to avoid confusion. Single finger Down is handled below.
+                        }
+                    } else if (indexTip.y() > indexMcp.y() + 0.05 && !isMiddleUp && isIdxExt) {
+                         // Single finger pointing down fallback (Only if extended!)
+                         category = "Pointing_Down"
+                    }
+                    
+                    handHistory.add(Pair(currentTime, x))
+                    if (handHistory.size > HISTORY_SIZE) handHistory.removeFirst()
+                    
+                    // Static Filter Logic ... (existing) 
+                    if (!isDemoMode && handHistory.size >= 5) { 
+                        val first = handHistory.first()
+                        val last = handHistory.last()
+                        val dx = Math.abs(last.second - first.second)
+                        if (dx < 0.02) isStatic = true 
+                    }
+                    
+                    // SWIPE DETECTION
+                    // Calculate velocity over the last few frames
+                    if (handHistory.size >= 5) {
+                        val first = handHistory.first()
+                        val last = handHistory.last()
+                        val duration = (last.first - first.first) / 1000.0 // seconds
+                        val distance = last.second - first.second // positive = Left to Right (in MP coords, x increases Left->Right)
+                        // Note: Camera is mirrored typically. 
+                        // x: 0 (Left) -> 1 (Right). 
+                        // Move Hand Right -> x increases -> Velocity > 0.
+                        
+                        val velocity = if (duration > 0) distance / duration else 0.0
+                        
+                        // Lowered threshold to 0.5 (from 1.5) to make swipes easier to detect
+                        if (Math.abs(velocity) > 0.5) { // Threshold for Swipe
+                            // If moving fast, override category to Swipe
+                            // To prevent spamming, we might need a debounce or "consumed" flag, 
+                            // but CommandDispatcher has debounce.
+                            if (velocity > 0) category = "Swipe_Right"
+                            else category = "Swipe_Left"
+                        }
+                    }
+
+                    if (!isDemoMode && x > 0.6) { // Disable ROI in Demo
+                         inDriverZone = false
+                         positionHint = "passenger zone ignored"
+                    } else {
+                        if (x < 0.3) positionHint = "Move Right >"
+                        else if (x > 0.5) positionHint = "< Move Left"
+                    }
+                    
+                    val thumbTip = landmarks[4]
+                    val distance = Math.sqrt(
+                        Math.pow((thumbTip.x() - indexTip.x()).toDouble(), 2.0) +
+                        Math.pow((thumbTip.y() - indexTip.y()).toDouble(), 2.0)
+                    )
+                     if (distance < 0.05 && inDriverZone) {
+                         if (score > activeThreshold) {
+                            listener(GestureFeedback("Pinch", score, "Privacy Toggled", positionHint, isNightMode, isSleeping, isDemoMode, currentMood))
+                            lastWakeTime = currentTime 
+                            return@let 
+                        }
+                    }
+                }
+                
+                // Sleep Logic (Skipped in Demo Mode)
+                if (isSleeping) {
+                    if (inDriverZone && category == "Open_Palm" && score > activeThreshold) {
+                        if (wakeHoldStartTime == 0L) wakeHoldStartTime = currentTime
+                        
+                        if (currentTime - wakeHoldStartTime > 1000) { 
+                            isSleeping = false
+                            lastWakeTime = currentTime
+                            listener(GestureFeedback("WAKE UP", score, "System Active", positionHint, isNightMode, false, isDemoMode, currentMood))
+                        } else {
+                            listener(GestureFeedback("Possible Wake", score, "Hold to Wake...", positionHint, isNightMode, true, isDemoMode, currentMood))
+                        }
+                    } else {
+                        wakeHoldStartTime = 0L 
+                        if (inDriverZone) {
+                             listener(GestureFeedback("SLEEPING", score, "Show Palm to Wake", positionHint, isNightMode, true, isDemoMode, currentMood))
+                        }
+                    }
+                    return@let 
+                }
+                
+                lastWakeTime = currentTime 
+                
+                if (!inDriverZone) {
+                    listener(GestureFeedback("None", 0f, "Ignored (Passenger)", positionHint, isNightMode, isSleeping, isDemoMode, currentMood))
+                    return@let
+                }
+                
+                if (isStatic) {
+                     listener(GestureFeedback("None", score, "Ignored (Static/Wheel)", positionHint, isNightMode, isSleeping, isDemoMode, currentMood))
+                     return@let
+                }
+
+                val feedbackMsg = if (score > 0.8) "Excellent" else "Good"
+
+                if (score > activeThreshold) {
+                    listener(GestureFeedback(category, score, feedbackMsg, positionHint, isNightMode, isSleeping, isDemoMode, currentMood))
+                }
+            } else {
+                 wakeHoldStartTime = 0L
+                 // Send update even if no hand, so Mood is updated!
+                 listener(GestureFeedback("None", 0f, " ", "No Hand", isNightMode, isSleeping, isDemoMode, currentMood))
+            }
+        }
+    }
+    
+    fun close() {
+        gestureRecognizer?.close()
+        faceLandmarker?.close()
+    }
+}
