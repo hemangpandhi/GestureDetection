@@ -204,8 +204,28 @@ class MainActivity : AppCompatActivity() {
     }
     
     private fun checkPermissions() {
+        val permissions = mutableListOf<String>()
+        
         if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.INTERNET), 1)
+            permissions.add(android.Manifest.permission.INTERNET)
+        }
+        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            permissions.add(android.Manifest.permission.CAMERA)
+        }
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+            if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.FOREGROUND_SERVICE) != PackageManager.PERMISSION_GRANTED) {
+                permissions.add(android.Manifest.permission.FOREGROUND_SERVICE)
+            }
+        }
+         // Android 14
+        if (android.os.Build.VERSION.SDK_INT >= 34) {
+             if (ContextCompat.checkSelfPermission(this, "android.permission.FOREGROUND_SERVICE_CAMERA") != PackageManager.PERMISSION_GRANTED) {
+                permissions.add("android.permission.FOREGROUND_SERVICE_CAMERA")
+            }
+        }
+        
+        if (permissions.isNotEmpty()) {
+            ActivityCompat.requestPermissions(this, permissions.toTypedArray(), 1)
         }
     }
 
