@@ -18,6 +18,12 @@ import com.example.gesturecontrol.logic.GestureFeedback
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import com.example.gesturecontrol.ui.MainViewModel
+import com.example.gesturecontrol.ui.ViewPagerAdapter
+import androidx.lifecycle.ViewModelProvider
+import com.google.android.material.tabs.TabLayout
+import com.google.android.material.tabs.TabLayoutMediator
+import androidx.viewpager2.widget.ViewPager2
 
 class MainActivity : AppCompatActivity() {
 
@@ -27,9 +33,11 @@ class MainActivity : AppCompatActivity() {
     // UI Components (Restored)
     private lateinit var previewView: android.widget.ImageView
     private lateinit var statusText: android.widget.TextView
-    private lateinit var gestureText: android.widget.TextView
+    // private lateinit var gestureText: android.widget.TextView // Moved to Fragment
     private lateinit var ipInput: android.widget.EditText
     private lateinit var connectButton: android.widget.Button
+    
+    private lateinit var viewModel: MainViewModel
     
     private lateinit var settingsButton: android.widget.Button
     private lateinit var settingsOverlay: android.widget.FrameLayout
@@ -51,19 +59,20 @@ class MainActivity : AppCompatActivity() {
             
             gestureService?.onFeedbackUpdate = { feedback ->
                  runOnUiThread {
-                    val nightModeText = if (feedback.isNightMode) " [NIGHT MODE]" else ""
-                    val sleepText = if (feedback.isSleeping) " [SLEEPING]" else " [ACTIVE]"
-                    val demoText = if (feedback.isDemoMode) " [DEMO MODE]" else ""
-                    val moodText = "Mood: ${feedback.mood}"
-                    
-                    val action = com.example.gesturecontrol.logic.GestureMapper(this@MainActivity).getAction(feedback.gestureName)
-                    
-                    gestureText.text = "State: $sleepText$nightModeText$demoText\n" +
-                            "Gesture: ${feedback.gestureName}\n" +
-                            "Action: $action\n" +
-                            "Score: ${String.format("%.2f", feedback.score)}\n" +
-                            "Feedback: ${feedback.feedbackMessage}\n" +
-                            "$moodText"
+                    viewModel.gestureFeedback.value = feedback
+                 }
+            }
+            
+             gestureService?.onHealthUpdate = { state ->
+                 runOnUiThread {
+                     viewModel.healthState.value = state
+                     
+                     // Adaptive Mood Cockpit
+                     if (state.stressLevel == "High" && !isCalmTheme) {
+                         applyCalmTheme(true)
+                     } else if (state.stressLevel != "High" && isCalmTheme) {
+                         applyCalmTheme(false)
+                     }
                  }
             }
             
@@ -84,14 +93,32 @@ class MainActivity : AppCompatActivity() {
 
         previewView = findViewById(R.id.previewView)
         statusText = findViewById(R.id.statusText)
-        gestureText = findViewById(R.id.lastGestureText)
+        // gestureText = findViewById(R.id.lastGestureText) // Moved
         ipInput = findViewById(R.id.ipInput)
         connectButton = findViewById(R.id.connectButton)
         
         settingsButton = findViewById(R.id.settingsButton)
         settingsOverlay = findViewById(R.id.settingsOverlay)
         settingsList = findViewById(R.id.settingsList)
+        settingsList = findViewById(R.id.settingsList)
         closeSettings = findViewById(R.id.closeSettings)
+        
+        viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
+        
+        // Setup Tabs
+        val viewPager = findViewById<ViewPager2>(R.id.viewPager)
+        val tabLayout = findViewById<TabLayout>(R.id.tabLayout)
+        val adapter = ViewPagerAdapter(this)
+        viewPager.adapter = adapter
+        
+        TabLayoutMediator(tabLayout, viewPager) { tab, position ->
+            tab.text = when (position) {
+                0 -> "GESTURE CONTROL"
+                1 -> "BIOMETRIC VITALS"
+                2 -> "DRIVER SAFETY"
+                else -> "TAB"
+            }
+        }.attach()
         
         val gestureMapper = com.example.gesturecontrol.logic.GestureMapper(this)
         
@@ -230,4 +257,56 @@ class MainActivity : AppCompatActivity() {
     }
 
     // Removed direct onDestroy logic as Service handles it
+    // Adaptive Theme State
+    private var isCalmTheme = false
+
+    private fun applyCalmTheme(enable: Boolean) {
+        val root = findViewById<android.view.ViewGroup>(R.id.rootLayout)
+        val headerBar = findViewById<android.view.ViewGroup>(R.id.headerBar)
+        val tabLayout = findViewById<com.google.android.material.tabs.TabLayout>(R.id.tabLayout)
+        val bottomBar = findViewById<android.view.ViewGroup>(R.id.bottomControlBar)
+        val appTitle = findViewById<android.widget.TextView>(R.id.appTitle)
+
+        isCalmTheme = enable
+
+        if (enable) {
+            // Switch to Calm Blue Theme
+            val calmBg = ContextCompat.getColor(this, R.color.calm_background)
+            val calmSurf = ContextCompat.getColor(this, R.color.calm_surface)
+            val calmAccent = ContextCompat.getColor(this, R.color.calm_accent)
+            val calmText = ContextCompat.getColor(this, R.color.calm_text)
+
+            root.setBackgroundColor(calmBg)
+            headerBar.setBackgroundColor(calmSurf)
+            tabLayout.setBackgroundColor(calmSurf)
+            bottomBar.setBackgroundColor(calmSurf)
+            
+            appTitle.setTextColor(calmAccent)
+            tabLayout.setTabTextColors(calmText, calmAccent)
+            tabLayout.setSelectedTabIndicatorColor(calmAccent)
+
+            // Simulate Environmental Adjustments
+            android.widget.Toast.makeText(this, "High Stress Detected: Activating Calm Mode (Music Down, A/C Cooled)", android.widget.Toast.LENGTH_LONG).show()
+            
+            // Mock System Broadcast
+            val intent = android.content.Intent("com.android.design.intent.action.APPLY_THEME")
+            intent.putExtra("theme_id", "calm_blue")
+            sendBroadcast(intent)
+            
+        } else {
+             // Revert to Auto Dark Theme
+            val autoBg = ContextCompat.getColor(this, R.color.auto_background)
+            val autoSurf = ContextCompat.getColor(this, R.color.auto_surface) 
+            val autoAccent = ContextCompat.getColor(this, R.color.auto_accent)
+            
+            root.setBackgroundColor(autoBg)
+            headerBar.setBackgroundColor(autoSurf)
+            tabLayout.setBackgroundColor(autoSurf)
+            bottomBar.setBackgroundColor(autoSurf)
+            
+            appTitle.setTextColor(autoAccent)
+            tabLayout.setTabTextColors(android.graphics.Color.parseColor("#888888"), autoAccent)
+            tabLayout.setSelectedTabIndicatorColor(autoAccent)
+        }
+    }
 }

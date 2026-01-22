@@ -1,3 +1,5 @@
+package com.example.gesturecontrol.service
+
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -16,6 +18,8 @@ import com.example.gesturecontrol.camera.CameraStreamManager
 import com.example.gesturecontrol.logic.CommandDispatcher
 import com.example.gesturecontrol.logic.GestureFeedback
 import com.example.gesturecontrol.logic.GestureProcessor
+import com.example.gesturecontrol.logic.HealthProcessor
+import com.example.gesturecontrol.logic.HealthState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -27,11 +31,17 @@ class GestureService : LifecycleService() {
     private lateinit var gestureProcessor: GestureProcessor
     private lateinit var commandDispatcher: CommandDispatcher
     private lateinit var cameraStreamManager: CameraStreamManager
+    private lateinit var healthProcessor: HealthProcessor
     
     // Callbacks for UI
     var onFrameUpdate: ((Bitmap) -> Unit)? = null
     var onFeedbackUpdate: ((GestureFeedback) -> Unit)? = null
+    var onHealthUpdate: ((HealthState) -> Unit)? = null
     var onStatusUpdate: ((String) -> Unit)? = null
+
+    private var lastMood = "Neutral"
+
+    private var lastFrameTime = 0L
 
     inner class LocalBinder : Binder() {
         fun getService(): GestureService = this@GestureService
@@ -50,6 +60,20 @@ class GestureService : LifecycleService() {
         commandDispatcher = CommandDispatcher(this)
         
         gestureProcessor = GestureProcessor(this) { feedback ->
+            // Capture Mood / State
+            lastMood = feedback.mood
+            
+            // Check Critical Driver States
+            when (feedback.mood) {
+                "DROWSY WARNING" -> commandDispatcher.triggerDrowsinessAlarm()
+                "Confused ?" -> commandDispatcher.triggerAssistance()
+                "Discomfort/Wince" -> commandDispatcher.triggerSeatAdjustment()
+                // Distraction is logged but maybe doesn't trigger a tone every frame? 
+                // Let's assume CommandDispatcher limits tone frequency if we added debounce there.
+                // But for now, let's just log or visual only for Distracted unless it persists.
+                // The Processor logic already has a 2s timer for "DISTRACTED".
+            }
+
             // Execute Command (Always, background or foreground)
             if (!feedback.isSleeping) {
                 val action = com.example.gesturecontrol.logic.GestureMapper(this).getAction(feedback.gestureName)
@@ -67,6 +91,15 @@ class GestureService : LifecycleService() {
         }
         gestureProcessor.isDemoMode = true // Default
         
+        healthProcessor = HealthProcessor { state ->
+            if (state.stressLevel == "High" && !state.isCalmModeActive) {
+                // Trigger Calm Mode
+                commandDispatcher.triggerCalmMode()
+                healthProcessor.setCalmMode(true) // Prevent re-trigger
+            }
+            onHealthUpdate?.invoke(state)
+        }
+        
         cameraStreamManager = CameraStreamManager(
             onFrame = { bitmap ->
                 // 1. Send to UI for Preview
@@ -74,7 +107,11 @@ class GestureService : LifecycleService() {
                 
                 // 2. Process AI (in background service scope)
                 lifecycleScope.launch(Dispatchers.Default) {
+                     lastFrameTime = System.currentTimeMillis()
                      gestureProcessor.processingFrame(bitmap)
+                     
+                     // Health Processing
+                     healthProcessor.processFrame(bitmap, gestureProcessor.lastFaceResult, lastMood)
                 }
             },
             onConnected = {
@@ -84,7 +121,33 @@ class GestureService : LifecycleService() {
                 onStatusUpdate?.invoke("Error: $error")
             }
         )
+        
+        // Stale Frame Watchdog
+        lifecycleScope.launch(Dispatchers.Default) {
+            while (true) {
+                kotlinx.coroutines.delay(1000)
+                if (System.currentTimeMillis() - lastFrameTime > 2000) {
+                     // Stream stalled? Reset gesture to prevent stuck state
+                     // We can manually trigger an empty/none feedback or just let it be.
+                     // But GestureProcessor doesn't clear state automatically if no frames come in.
+                     // Let's force a "None" update if needed, but GestureProcessor state is internal.
+                     // Better: Just don't trigger commands if stream is old.
+                     // But if the LAST command was "Vol Up" and it repeats? CommandDispatcher has debounce.
+                     // The issue "automatically change based on last gesture" implies the feedback loop might be stuck.
+                     // If processingFrame isn't called, no new feedback is generated.
+                     // So the UI might show old text, but no new commands are fired.
+                     // UNLESS CommandDispatcher is looping? No, it triggers once per call.
+                     // So maybe the user sees the TEXT stuck and thinks it's acting?
+                     // Or maybe the stream buffer is looping? 
+                     // Regardless, let's update status.
+                     if (lastFrameTime > 0) {
+                         onStatusUpdate?.invoke("Stream Stalled / Waiting...")
+                     }
+                }
+            }
+        }
     }
+    
     
     fun startCamera(url: String) {
         val prefs = getSharedPreferences("GestureAppPrefs", Context.MODE_PRIVATE)
@@ -110,7 +173,7 @@ class GestureService : LifecycleService() {
         val notification: Notification = NotificationCompat.Builder(this, channelId)
             .setContentTitle("Gesture Control Active")
             .setContentText("Camera is running in background detecting gestures...")
-            .setSmallIcon(R.mipmap.ic_launcher)
+            .setSmallIcon(android.R.drawable.ic_dialog_info)
             .build()
 
         // ID must be > 0

@@ -8,6 +8,10 @@
     <color name="auto_text_primary">#FFFFFF</color>
     <color name="auto_text_secondary">#DDDDDD</color>
     <color name="black">#FF000000</color>
+    <color name="calm_accent">#80D8FF</color>
+    <color name="calm_background">#001A33</color>
+    <color name="calm_surface">#00334D</color>
+    <color name="calm_text">#E0F7FA</color>
     <color name="purple_200">#FFBB86FC</color>
     <color name="purple_500">#FF6200EE</color>
     <color name="purple_700">#FF3700B3</color>

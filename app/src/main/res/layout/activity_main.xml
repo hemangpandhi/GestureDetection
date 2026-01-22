@@ -2,6 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/rootLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/auto_background"
@@ -58,6 +59,17 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
+    <!-- TAB LAYOUT -->
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tabLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#1E1E1E"
+        app:tabTextColor="#888888"
+        app:tabSelectedTextColor="@color/auto_accent"
+        app:tabIndicatorColor="@color/auto_accent"
+        app:layout_constraintTop_toBottomOf="@id/headerBar" />
+
     <!-- MAIN CONTENT AREA -->
     <!-- Camera Preview Card -->
     <androidx.cardview.widget.CardView
@@ -68,7 +80,7 @@
         app:cardCornerRadius="24dp"
         app:cardBackgroundColor="#000000"
         app:cardElevation="0dp"
-        app:layout_constraintTop_toBottomOf="@id/headerBar"
+        app:layout_constraintTop_toBottomOf="@id/tabLayout"
         app:layout_constraintBottom_toTopOf="@id/bottomControlBar"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
@@ -80,51 +92,12 @@
             android:scaleType="fitCenter"
             android:src="@color/black" 
             android:contentDescription="Camera Stream" />
-            
-        <!-- Info Overlay Inside the Preview (HUD Style) -->
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="24dp"
-            android:background="#80000000"
-            android:layout_gravity="bottom|start"
-            android:layout_margin="24dp">
-            
-            <TextView
-                android:id="@+id/lastGestureText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Waiting for gesture..."
-                android:textColor="@color/white"
-                android:textSize="32sp"
-                android:fontFamily="sans-serif-medium"/>
-        </LinearLayout>
 
-        <!-- Legend Overlay (Top Right) -->
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="20dp"
-            android:background="#60000000"
-            android:layout_gravity="top|end"
-            android:layout_margin="24dp">
-            <TextView
-                 android:layout_width="wrap_content"
-                 android:layout_height="wrap_content"
-                 android:text="Gestures:"
-                 android:textColor="@color/auto_accent"
-                 android:textSize="20sp"
-                 android:textStyle="bold"/>
-            <TextView
-                 android:id="@+id/gestureLegend"
-                 android:layout_width="wrap_content"
-                 android:layout_height="wrap_content"
-                 android:text="• Fist: Play  • Palm: Pause\n• Point L/R: Prev/Next\n• Index: Vol -  • Two Finger: Vol +"
-                 android:textColor="#DDFFFFFF"
-                 android:textSize="20sp"/>
-        </LinearLayout>
+        <!-- ViewPager for Fragments Overlay -->
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/viewPager"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
 
     </androidx.cardview.widget.CardView>
 

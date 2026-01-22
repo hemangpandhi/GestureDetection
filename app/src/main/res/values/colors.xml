@@ -16,4 +16,10 @@
     <color name="auto_text_secondary">#DDDDDD</color>
     <color name="auto_success">#00C853</color>
     <color name="auto_error">#D50000</color>
+
+    <!-- Calm/Cool Theme -->
+    <color name="calm_background">#001A33</color> <!-- Deep cool blue -->
+    <color name="calm_surface">#00334D</color>
+    <color name="calm_accent">#80D8FF</color> <!-- Soft Sky Blue -->
+    <color name="calm_text">#E0F7FA</color>
 </resources>

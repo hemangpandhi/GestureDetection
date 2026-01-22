@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.example.gesturecontrol.app-mergeDebugResources-36:/values-am/values-am.xml",
+            "outputFile": "com.example.gesturecontrol.app-mergeDebugResources-41:/values-am/values-am.xml",
             "map": [
                 {
                     "source": "/home/hemang/.gradle/caches/transforms-3/1b230c477689b30617d023b3996f7ac7/transformed/material-1.11.0/res/values-am/values-am.xml",

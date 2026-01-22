@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/transparent">
+
+    <!-- Health Dashboard -->
+    <LinearLayout
+        android:layout_width="400dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="#B3000000"
+        android:padding="24dp"
+        android:layout_gravity="center_vertical|start"
+        android:layout_margin="24dp">
+        
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="BIOMETRIC VITALS"
+            android:textColor="#00FF99"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="24dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="HEART RATE"
+            android:textColor="#AAAAAA"
+            android:textSize="16sp"/>
+            
+        <TextView
+            android:id="@+id/bpmText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="72 BPM"
+            android:textColor="@android:color/white"
+            android:textSize="48sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp"/>
+            
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Status: Normal"
+            android:textColor="#00FF99"
+            android:id="@+id/bpmStatus"
+            android:textSize="18sp"
+            android:layout_marginBottom="32dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="STRESS LEVEL"
+            android:textColor="#AAAAAA"
+            android:textSize="16sp"/>
+
+        <TextView
+            android:id="@+id/stressText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="LOW"
+            android:textColor="@android:color/white"
+            android:textSize="48sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp"/>
+            
+        <TextView
+            android:id="@+id/calmModeStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Calm Mode: OFF"
+            android:textColor="#88FFFFFF"
+            android:textSize="16sp"/>
+
+    </LinearLayout>
+
+    <!-- Signal Graph Mockup (Right Side) -->
+     <LinearLayout
+        android:layout_width="400dp"
+        android:layout_height="200dp"
+        android:background="#80000000"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="24dp"
+        android:orientation="vertical"
+        android:padding="16dp">
+        
+        <TextView
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content"
+             android:text="Live rPPG Signal"
+             android:textColor="#AAAAAA"/>
+             
+        <!-- A simple view to draw graph could go here, for now just a placeholder view that we might animate width of or something? 
+             Or just a text description. -->
+        <com.example.gesturecontrol.ui.LineGraphView
+            android:id="@+id/signalGraphView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#20002000"
+            android:layout_marginTop="8dp"/>
+    </LinearLayout>
+
+</FrameLayout>

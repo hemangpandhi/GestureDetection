@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.example.gesturecontrol.app-mergeDebugResources-36:/values-ta/values-ta.xml",
+            "outputFile": "com.example.gesturecontrol.app-mergeDebugResources-41:/values-ta/values-ta.xml",
             "map": [
                 {
                     "source": "/home/hemang/.gradle/caches/transforms-3/19c59c977df6a3ab74cd50a08397cbd1/transformed/media3-exoplayer-1.2.1/res/values-ta/values-ta.xml",

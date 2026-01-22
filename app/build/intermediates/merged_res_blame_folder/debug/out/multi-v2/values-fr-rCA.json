@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.example.gesturecontrol.app-mergeDebugResources-36:/values-fr-rCA/values-fr-rCA.xml",
+            "outputFile": "com.example.gesturecontrol.app-mergeDebugResources-41:/values-fr-rCA/values-fr-rCA.xml",
             "map": [
                 {
                     "source": "/home/hemang/.gradle/caches/transforms-3/00d4e807deb2e00f64d64f0adddbcd9b/transformed/media3-ui-1.2.1/res/values-fr-rCA/values-fr-rCA.xml",

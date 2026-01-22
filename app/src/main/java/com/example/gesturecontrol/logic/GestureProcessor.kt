@@ -31,6 +31,10 @@ class GestureProcessor(context: Context, private val listener: (GestureFeedback)
     private var currentMood = "Neutral"
     private var frameCount = 0
     
+    // Shared Data for HealthProcessor
+    var lastFaceResult: FaceLandmarkerResult? = null
+
+    
     // Phase 3 State Variables
     private var isSleeping = true 
     private var lastWakeTime = 0L
@@ -94,6 +98,7 @@ class GestureProcessor(context: Context, private val listener: (GestureFeedback)
             frameCount++
             if (frameCount % 10 == 0) {
                  val faceResult = faceLandmarker?.detect(mpImage)
+                 lastFaceResult = faceResult
                  analyzeMood(faceResult)
             }
             
@@ -122,52 +127,122 @@ class GestureProcessor(context: Context, private val listener: (GestureFeedback)
         }
     }
     
+    // State Timers
+    private var eyesClosedStartTime = 0L
+    private var distractionStartTime = 0L
+    
     private fun analyzeMood(result: FaceLandmarkerResult?) {
         result?.let {
             if (it.faceBlendshapes().isPresent && it.faceBlendshapes().get().isNotEmpty()) {
                 val blendshapes = it.faceBlendshapes().get()[0]
                 
-                // Logic for Mood
-                // We access categories by name if available, or just index if we knew standard MP indices.
-                // MediaPipe standard blendshapes: 52 shapes.
-                // Simplified lookup:
+                // Scores
                 var smileScore = 0f
                 var jawOpenScore = 0f
                 var browDownScore = 0f
                 var frownScore = 0f
                 
+                // Advanced States
+                var eyeBlinkScore = 0f
+                var gazeOutScore = 0f
+                var browInnerUpScore = 0f
+                var noseSneerScore = 0f
+                var cheekPuffScore = 0f
+                var eyeSquintScore = 0f
+                var eyeBlinkLeftScore = 0f
+                var eyeBlinkRightScore = 0f
+                
                 for (category in blendshapes) {
                     val name = category.categoryName()
                     val score = category.score()
                     
-                    if (name == "mouthSmileLeft" || name == "mouthSmileRight") {
-                        smileScore += score
+                    // Mood
+                    if (name == "mouthSmileLeft" || name == "mouthSmileRight") smileScore += score
+                    if (name == "jawOpen") jawOpenScore = score
+                    if (name == "browDownLeft" || name == "browDownRight") browDownScore += score
+                    if (name == "mouthFrownLeft" || name == "mouthFrownRight") frownScore += score
+                    
+                    // Advanced
+                    if (name == "eyeBlinkLeft") eyeBlinkLeftScore = score
+                    if (name == "eyeBlinkRight") eyeBlinkRightScore = score
+                    
+                    if (name == "eyeBlinkLeft" || name == "eyeBlinkRight") {
+                         // Keep existing combined score for Drowsiness logic
+                        if (score > 0.5) eyeBlinkScore += 0.5f 
                     }
-                    if (name == "jawOpen") {
-                        jawOpenScore = score
+                    if (name == "eyeLookOutLeft" || name == "eyeLookOutRight" || name == "eyeLookUp" || name == "eyeLookDown") {
+                        if (score > 0.5) gazeOutScore = score
                     }
-                    if (name == "browDownLeft" || name == "browDownRight") {
-                        browDownScore += score
+                    if (name == "browInnerUp") browInnerUpScore = score
+                    if (name == "noseSneerLeft" || name == "noseSneerRight") {
+                        if (score > 0.5) noseSneerScore = score // Max or single trigger
                     }
-                    if (name == "mouthFrownLeft" || name == "mouthFrownRight") {
-                        frownScore += score
+                    
+                    // New Moods
+                    if (name == "cheekPuff") cheekPuffScore = score
+                    if (name == "eyeSquintLeft" || name == "eyeSquintRight") eyeSquintScore += score // Sum > 1.0 means both
+                    // jawOpen is already tracked for "Surprised" but also for "Speaking" 
+                    // To diff Surprised vs Speaking: Surprised is usually WIDE open (>0.3), Speaking is rhythmic/smaller.
+                    // For demo, let's use a threshold.
+                }
+                
+                // --- STATE LOGIC ---
+                val now = System.currentTimeMillis()
+                var newState = "Neutral"
+                
+                // 1. Drowsiness (Eyes Closed > 1s)
+                if (eyeBlinkScore > 0.8) { // Both eyes closed
+                    if (eyesClosedStartTime == 0L) eyesClosedStartTime = now
+                    if (now - eyesClosedStartTime > 1000) {
+                        newState = "DROWSY WARNING"
+                        eyesClosedStartTime = now - 1000 // Keep triggering
+                    }
+                } else {
+                    eyesClosedStartTime = 0L
+                }
+                
+                // 2. Distraction (Gaze Away > 2s)
+                if (gazeOutScore > 0.6) {
+                    if (distractionStartTime == 0L) distractionStartTime = now
+                    if (now - distractionStartTime > 2000) {
+                        newState = "DISTRACTED"
+                        distractionStartTime = now - 2000
+                    }
+                } else {
+                    distractionStartTime = 0L
+                }
+                
+                // 3. Expressions (Immediate)
+                if (newState == "Neutral") {
+                    if (browInnerUpScore > 0.5) {
+                        newState = "Confused ?"
+                    } else if (noseSneerScore > 0.5) {
+                        newState = "Discomfort/Wince"
+                    } else if (cheekPuffScore > 0.4) {
+                        newState = "Frustrated (Cheek Puff)"
+                    } else if (eyeSquintScore > 1.0 && smileScore < 0.2) { // Squinting without smiling
+                        newState = "Skeptical -_-"
+                    } else if (smileScore > 0.5) {
+                        newState = "Happy :)"
+                    } else if (browDownScore > 0.5) {
+                        newState = "Angry >:("
+                    } else if (frownScore > 0.5) {
+                        newState = "Sad :("
+                    } else if (jawOpenScore > 0.45) { // Raised threshold for Surprise
+                        newState = "Surprised :O"
+                    } else if (jawOpenScore > 0.1) { // Lower threshold for speaking
+                        newState = "Speaking..."
+                    } else if (eyeBlinkLeftScore > 0.5 && eyeBlinkRightScore < 0.2) {
+                        newState = "Winking (Left)"
+                    } else if (eyeBlinkRightScore > 0.5 && eyeBlinkLeftScore < 0.2) {
+                        newState = "Winking (Right)"
                     }
                 }
                 
-                // Thresholds & Priority
-                
-                Log.d("MoodDetection", "Smile: $smileScore, BrowDown: $browDownScore, Frown: $frownScore, JawOpen: $jawOpenScore")
-
-                if (smileScore > 0.5) {
-                    currentMood = "Happy :)"
-                } else if (browDownScore > 0.5) {
-                    currentMood = "Angry >:("
-                } else if (frownScore > 0.5) {
-                    currentMood = "Sad :("
-                } else if (jawOpenScore > 0.3) {
-                    currentMood = "Surprised :O"
-                } else {
-                    currentMood = "Neutral"
+                currentMood = newState
+                if (newState == "DROWSY WARNING" || newState == "DISTRACTED") {
+                    // Force immediate update if critical
+                     Log.w("GestureProcessor", "Critical State: $newState")
                 }
             }
         }
@@ -212,7 +287,6 @@ class GestureProcessor(context: Context, private val listener: (GestureFeedback)
                     val pinkyMcp = landmarks[17]
                     
                     // Define State Booleans (Restored)
-                    val isIndexUp = indexTip.y() < indexMcp.y()
                     val isMiddleUp = middleTip.y() < middleMcp.y()
                     val isRingUp = ringTip.y() < ringMcp.y()
                     val isPinkyUp = pinkyTip.y() < pinkyMcp.y()
@@ -248,20 +322,23 @@ class GestureProcessor(context: Context, private val listener: (GestureFeedback)
                         // Both extended, others likely folded
                         
                         // Check Orientation
+                        // Dynamic Threshold: 40% of palm size is a robust movement indicator
+                        val directionThreshold = palmSize * 0.4
+                        
                         if (Math.abs(idxDx) > Math.abs(idxDy)) {
                             // Horizontal
-                            if (idxDx > 0.05) { 
+                            if (idxDx > directionThreshold) { 
                                 // dx > 0 means pointing to Image Right (User's Left if mirrored)
                                 Log.d("GestureProcessor", "Override: Two_Fingers_Left")
                                 category = "Two_Fingers_Left"
-                            } else if (idxDx < -0.05) {
+                            } else if (idxDx < -directionThreshold) {
                                 // dx < 0 means pointing to Image Left (User's Right if mirrored)
                                 Log.d("GestureProcessor", "Override: Two_Fingers_Right")
                                 category = "Two_Fingers_Right"
                             }
                         } else {
                             // Vertical
-                            if (idxDy < -0.05) { // Up (Y decreases upwards)
+                            if (idxDy < -directionThreshold) { // Up (Y decreases upwards)
                                 Log.d("GestureProcessor", "Override: Two_Fingers_Up")
                                 category = "Two_Fingers_Up"
                             }

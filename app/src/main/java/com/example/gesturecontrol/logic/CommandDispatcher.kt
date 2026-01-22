@@ -94,13 +94,44 @@ class CommandDispatcher(private val context: Context) {
     private fun playTone(success: Boolean, doubleBeep: Boolean = false) {
          try {
             if (success) {
-                toneGenerator.startTone(android.media.ToneGenerator.TONE_PROP_BEEP, 150)
+                if (doubleBeep) {
+                     toneGenerator.startTone(android.media.ToneGenerator.TONE_PROP_ACK, 200)
+                } else {
+                     toneGenerator.startTone(android.media.ToneGenerator.TONE_PROP_BEEP, 150)
+                }
             }
          } catch (e: Exception) {
              Log.e("CommandDispatcher", "Tone error: ${e.message}")
          }
     }
     
+    fun triggerCalmMode() {
+        Log.i("CommandDispatcher", "Triggering Calm Mode (Blue Light + Soothing Audio)")
+        // Simulate Smart Device trigger
+        playTone(true, doubleBeep = false) // Just a beep for now, or maybe a long tone?
+        // In a real demo, this would send an intent to change the theme color provided by MainActivity
+        val intent = android.content.Intent("com.example.gesturecontrol.CALM_MODE")
+        context.sendBroadcast(intent)
+    }
+
+    fun triggerDrowsinessAlarm() {
+        Log.w("CommandDispatcher", "ALARM: WAKE UP! (Drowsiness Detected)")
+        toneGenerator.startTone(android.media.ToneGenerator.TONE_CDMA_EMERGENCY_RINGBACK, 1000)
+        // Intent for Alarm UI
+        val intent = android.content.Intent("com.example.gesturecontrol.DROWSY_ALARM")
+        context.sendBroadcast(intent)
+    }
+
+    fun triggerAssistance() {
+        Log.i("CommandDispatcher", "Assistant: 'Do you need help?' (Confusion Detected)")
+        toneGenerator.startTone(android.media.ToneGenerator.TONE_PROP_PROMPT, 300)
+    }
+
+    fun triggerSeatAdjustment() {
+        Log.i("CommandDispatcher", "Seat: Adjusting Lumbar Support... (Discomfort Detected)")
+        toneGenerator.startTone(android.media.ToneGenerator.TONE_DTMF_0, 200) // Mechanical sound mock
+    }
+
     private fun toggleMute() {
         audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_TOGGLE_MUTE, AudioManager.FLAG_SHOW_UI)
         Log.i("CommandDispatcher", "Toggled Mute")

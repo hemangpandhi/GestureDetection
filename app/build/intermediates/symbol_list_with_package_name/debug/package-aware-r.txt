@@ -1418,6 +1418,10 @@ color button_material_dark
 color button_material_light
 color call_notification_answer_color
 color call_notification_decline_color
+color calm_accent
+color calm_background
+color calm_surface
+color calm_text
 color carColorBlue
 color carColorGreen
 color carColorRed
@@ -3335,6 +3339,7 @@ id action_text
 id actions
 id activity_chooser_view_content
 id add
+id alertOverlay
 id alertTitle
 id aligned
 id all
@@ -3364,9 +3369,12 @@ id bounce
 id bounceBoth
 id bounceEnd
 id bounceStart
+id bpmStatus
+id bpmText
 id buttonPanel
 id cache_measures
 id callMeasure
+id calmModeStatus
 id cancel_action
 id cancel_button
 id carryVelocity
@@ -3521,6 +3529,7 @@ id forever
 id fragment_container_view_tag
 id frost
 id fullscreen_header
+id gazeText
 id gestureLegend
 id ghost_view
 id ghost_view_holder
@@ -3557,6 +3566,7 @@ id item_touch_helper_previous_elevation
 id jumpToEnd
 id jumpToStart
 id labeled
+id lastEventText
 id lastGestureText
 id layout
 id left
@@ -3697,8 +3707,10 @@ id right
 id rightToLeft
 id right_icon
 id right_side
+id rootLayout
 id rounded
 id row_index_key
+id safetyStatusText
 id save_non_transition_alpha
 id save_overlay_view
 id sawtooth
@@ -3731,6 +3743,7 @@ id shortcut
 id showCustom
 id showHome
 id showTitle
+id signalGraphView
 id sin
 id skipCollapsed
 id skipped
@@ -3762,11 +3775,13 @@ id staticPostLayout
 id statusText
 id status_bar_latest_event_content
 id stop
+id stressText
 id stretch
 id submenuarrow
 id submit_area
 id supportScrollUp
 id surface_view
+id tabLayout
 id tabMode
 id tag_accessibility_actions
 id tag_accessibility_clickable_spans
@@ -3821,6 +3836,7 @@ id up
 id useLogo
 id vertical_only
 id video_decoder_gl_surface_view
+id viewPager
 id view_offset_helper
 id view_transition
 id view_tree_lifecycle_owner
@@ -3990,6 +4006,9 @@ layout exo_styled_settings_list
 layout exo_styled_settings_list_item
 layout exo_styled_sub_settings_list_item
 layout exo_track_selection_dialog
+layout fragment_driver_safety
+layout fragment_gesture_control
+layout fragment_health_monitor
 layout ime_base_split_test_activity
 layout ime_secondary_split_test_activity
 layout m3_alert_dialog
