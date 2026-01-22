@@ -145,9 +145,23 @@ class MainActivity : AppCompatActivity() {
             if (url.isNotEmpty()) {
                 if (isBound) {
                     gestureService?.startCamera(url)
+                    // Save for auto-reconnect
+                    val prefs = getSharedPreferences("GestureAppPrefs", Context.MODE_PRIVATE)
+                    prefs.edit().putString("camera_url", url).apply()
                 } else {
                     statusText.text = "Service not bound!"
                 }
+            }
+        }
+        
+        val disconnectButton = findViewById<android.widget.Button>(R.id.disconnectButton)
+        disconnectButton.setOnClickListener {
+            if (isBound) {
+                gestureService?.stopCamera()
+                statusText.text = "Disconnected by User"
+                // Clear saved URL to prevent auto-reconnect logic if we add it later
+                // val prefs = getSharedPreferences("GestureAppPrefs", Context.MODE_PRIVATE)
+                // prefs.edit().remove("camera_url").apply() 
             }
         }
         

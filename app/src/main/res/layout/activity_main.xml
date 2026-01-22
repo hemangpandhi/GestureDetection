@@ -144,6 +144,17 @@
             android:layout_marginStart="16dp"
             android:backgroundTint="#333333"
             android:textColor="@color/white"/>
+
+        <Button
+            android:id="@+id/disconnectButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="DISCONNECT"
+            android:textSize="20sp"
+            android:padding="16dp"
+            android:layout_marginStart="16dp"
+            android:backgroundTint="@color/auto_error"
+            android:textColor="@color/white"/>
     </LinearLayout>
 
     <!-- SETTINGS OVERLAY (Full Screen Modal) -->

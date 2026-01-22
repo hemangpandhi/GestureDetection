@@ -142,6 +142,18 @@ class GestureService : LifecycleService() {
                      // Regardless, let's update status.
                      if (lastFrameTime > 0) {
                          onStatusUpdate?.invoke("Stream Stalled / Waiting...")
+                         
+                         // Auto-Reconnect Attempt (Simple)
+                         if (System.currentTimeMillis() - lastFrameTime > 5000) {
+                              onStatusUpdate?.invoke("Attempting Auto-Reconnect...")
+                              val prefs = getSharedPreferences("GestureAppPrefs", Context.MODE_PRIVATE)
+                              val url = prefs.getString("camera_url", "")
+                              if (!url.isNullOrEmpty()) {
+                                  // Re-trigger startCamera which restarts stream
+                                  cameraStreamManager.startStream(url)
+                                  lastFrameTime = System.currentTimeMillis() // Reset timer to prevent rapid loop
+                              }
+                         }
                      }
                 }
             }

@@ -27,6 +27,7 @@ id bpmText
 id calmModeStatus
 id closeSettings
 id connectButton
+id disconnectButton
 id gazeText
 id gestureLegend
 id headerBar
