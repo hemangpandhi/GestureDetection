@@ -18,7 +18,7 @@
     <color name="teal_200">#FF03DAC5</color>
     <color name="teal_700">#FF018786</color>
     <color name="white">#FFFFFFFF</color>
-    <string name="app_name">Gesture Control</string>
+    <string name="app_name">Genesis Empathic Cockpit</string>
     <string name="status_connected">Camera Connected</string>
     <string name="status_disconnected">Camera Disconnected</string>
     <string name="status_searching">Searching for gestures...</string>

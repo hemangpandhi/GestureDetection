@@ -1,9 +1,9 @@
 -- Merging decision tree log ---
 manifest
-ADDED from /home/hemang/TCS_Demo/app/src/main/AndroidManifest.xml:2:1-43:12
-INJECTED from /home/hemang/TCS_Demo/app/src/main/AndroidManifest.xml:2:1-43:12
-INJECTED from /home/hemang/TCS_Demo/app/src/main/AndroidManifest.xml:2:1-43:12
-INJECTED from /home/hemang/TCS_Demo/app/src/main/AndroidManifest.xml:2:1-43:12
+ADDED from /home/hemang/TCS_Demo/app/src/main/AndroidManifest.xml:2:1-48:12
+INJECTED from /home/hemang/TCS_Demo/app/src/main/AndroidManifest.xml:2:1-48:12
+INJECTED from /home/hemang/TCS_Demo/app/src/main/AndroidManifest.xml:2:1-48:12
+INJECTED from /home/hemang/TCS_Demo/app/src/main/AndroidManifest.xml:2:1-48:12
 MERGED from [com.google.android.material:material:1.11.0] /home/hemang/.gradle/caches/transforms-3/1b230c477689b30617d023b3996f7ac7/transformed/material-1.11.0/AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.constraintlayout:constraintlayout:2.1.4] /home/hemang/.gradle/caches/transforms-3/d5727db3577b6baffc19ae11d71f59db/transformed/constraintlayout-2.1.4/AndroidManifest.xml:2:1-11:12
 MERGED from [androidx.appcompat:appcompat-resources:1.6.1] /home/hemang/.gradle/caches/transforms-3/7e4c3b45b7c9677c9cab732217087068/transformed/appcompat-resources-1.6.1/AndroidManifest.xml:17:1-22:12
@@ -105,8 +105,8 @@ ADDED from /home/hemang/TCS_Demo/app/src/main/AndroidManifest.xml:13:5-15:35
 	android:name
 		ADDED from /home/hemang/TCS_Demo/app/src/main/AndroidManifest.xml:14:9-56
 application
-ADDED from /home/hemang/TCS_Demo/app/src/main/AndroidManifest.xml:17:5-41:19
-INJECTED from /home/hemang/TCS_Demo/app/src/main/AndroidManifest.xml:17:5-41:19
+ADDED from /home/hemang/TCS_Demo/app/src/main/AndroidManifest.xml:17:5-46:19
+INJECTED from /home/hemang/TCS_Demo/app/src/main/AndroidManifest.xml:17:5-46:19
 MERGED from [com.google.android.material:material:1.11.0] /home/hemang/.gradle/caches/transforms-3/1b230c477689b30617d023b3996f7ac7/transformed/material-1.11.0/AndroidManifest.xml:22:5-20
 MERGED from [com.google.android.material:material:1.11.0] /home/hemang/.gradle/caches/transforms-3/1b230c477689b30617d023b3996f7ac7/transformed/material-1.11.0/AndroidManifest.xml:22:5-20
 MERGED from [androidx.constraintlayout:constraintlayout:2.1.4] /home/hemang/.gradle/caches/transforms-3/d5727db3577b6baffc19ae11d71f59db/transformed/constraintlayout-2.1.4/AndroidManifest.xml:9:5-20
@@ -147,32 +147,44 @@ MERGED from [androidx.startup:startup-runtime:1.1.1] /home/hemang/.gradle/caches
 		ADDED from /home/hemang/TCS_Demo/app/src/main/AndroidManifest.xml:22:9-52
 	android:usesCleartextTraffic
 		ADDED from /home/hemang/TCS_Demo/app/src/main/AndroidManifest.xml:23:9-44
+meta-data#com.android.automotive
+ADDED from /home/hemang/TCS_Demo/app/src/main/AndroidManifest.xml:26:9-28:59
+	android:resource
+		ADDED from /home/hemang/TCS_Demo/app/src/main/AndroidManifest.xml:28:13-56
+	android:name
+		ADDED from /home/hemang/TCS_Demo/app/src/main/AndroidManifest.xml:27:13-50
 activity#com.example.gesturecontrol.MainActivity
-ADDED from /home/hemang/TCS_Demo/app/src/main/AndroidManifest.xml:26:9-33:20
+ADDED from /home/hemang/TCS_Demo/app/src/main/AndroidManifest.xml:30:9-38:20
 	android:exported
-		ADDED from /home/hemang/TCS_Demo/app/src/main/AndroidManifest.xml:28:13-36
+		ADDED from /home/hemang/TCS_Demo/app/src/main/AndroidManifest.xml:32:13-36
 	android:name
-		ADDED from /home/hemang/TCS_Demo/app/src/main/AndroidManifest.xml:27:13-41
+		ADDED from /home/hemang/TCS_Demo/app/src/main/AndroidManifest.xml:31:13-41
+meta-data#distractionOptimized
+ADDED from /home/hemang/TCS_Demo/app/src/main/AndroidManifest.xml:33:13-82
+	android:value
+		ADDED from /home/hemang/TCS_Demo/app/src/main/AndroidManifest.xml:33:60-80
+	android:name
+		ADDED from /home/hemang/TCS_Demo/app/src/main/AndroidManifest.xml:33:24-59
 intent-filter#action:name:android.intent.action.MAIN+category:name:android.intent.category.LAUNCHER
-ADDED from /home/hemang/TCS_Demo/app/src/main/AndroidManifest.xml:29:13-32:29
+ADDED from /home/hemang/TCS_Demo/app/src/main/AndroidManifest.xml:34:13-37:29
 action#android.intent.action.MAIN
-ADDED from /home/hemang/TCS_Demo/app/src/main/AndroidManifest.xml:30:17-69
+ADDED from /home/hemang/TCS_Demo/app/src/main/AndroidManifest.xml:35:17-69
 	android:name
-		ADDED from /home/hemang/TCS_Demo/app/src/main/AndroidManifest.xml:30:25-66
+		ADDED from /home/hemang/TCS_Demo/app/src/main/AndroidManifest.xml:35:25-66
 category#android.intent.category.LAUNCHER
-ADDED from /home/hemang/TCS_Demo/app/src/main/AndroidManifest.xml:31:17-77
+ADDED from /home/hemang/TCS_Demo/app/src/main/AndroidManifest.xml:36:17-77
 	android:name
-		ADDED from /home/hemang/TCS_Demo/app/src/main/AndroidManifest.xml:31:27-74
+		ADDED from /home/hemang/TCS_Demo/app/src/main/AndroidManifest.xml:36:27-74
 service#com.example.gesturecontrol.service.GestureService
-ADDED from /home/hemang/TCS_Demo/app/src/main/AndroidManifest.xml:35:9-39:54
+ADDED from /home/hemang/TCS_Demo/app/src/main/AndroidManifest.xml:40:9-44:54
 	android:enabled
-		ADDED from /home/hemang/TCS_Demo/app/src/main/AndroidManifest.xml:37:13-35
+		ADDED from /home/hemang/TCS_Demo/app/src/main/AndroidManifest.xml:42:13-35
 	android:exported
-		ADDED from /home/hemang/TCS_Demo/app/src/main/AndroidManifest.xml:38:13-37
+		ADDED from /home/hemang/TCS_Demo/app/src/main/AndroidManifest.xml:43:13-37
 	android:foregroundServiceType
-		ADDED from /home/hemang/TCS_Demo/app/src/main/AndroidManifest.xml:39:13-51
+		ADDED from /home/hemang/TCS_Demo/app/src/main/AndroidManifest.xml:44:13-51
 	android:name
-		ADDED from /home/hemang/TCS_Demo/app/src/main/AndroidManifest.xml:36:13-51
+		ADDED from /home/hemang/TCS_Demo/app/src/main/AndroidManifest.xml:41:13-51
 uses-sdk
 INJECTED from /home/hemang/TCS_Demo/app/src/main/AndroidManifest.xml reason: use-sdk injection requested
 INJECTED from /home/hemang/TCS_Demo/app/src/main/AndroidManifest.xml

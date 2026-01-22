@@ -3372,6 +3372,7 @@ id bounceStart
 id bpmStatus
 id bpmText
 id buttonPanel
+id cabinHeader
 id cache_measures
 id callMeasure
 id calmModeStatus
@@ -3391,6 +3392,8 @@ id checked
 id chronometer
 id circle_center
 id clear_text
+id climateSeekBar
+id climateValue
 id clip_horizontal
 id clip_vertical
 id clockwise
@@ -3443,6 +3446,9 @@ id dragLeft
 id dragRight
 id dragStart
 id dragUp
+id driverCard
+id driverNameInput
+id driverNameText
 id dropdown_menu
 id easeIn
 id easeInOut
@@ -3609,6 +3615,7 @@ id media_controller_compat_view_tag
 id message
 id middle
 id mini
+id mirrorSpinner
 id month_grid
 id month_navigation_bar
 id month_navigation_fragment_toggle
@@ -3685,6 +3692,9 @@ id parent
 id parentPanel
 id parentRelative
 id parent_matrix
+id passengerActionText
+id passengerCard
+id passengerStatusText
 id password_toggle
 id path
 id pathRelative
@@ -3702,6 +3712,7 @@ id progress_horizontal
 id radio
 id ratio
 id rectangles
+id registerButton
 id report_drawn
 id reverseSawtooth
 id right
@@ -3732,12 +3743,14 @@ id search_mag_icon
 id search_plate
 id search_src_text
 id search_voice_btn
+id seatSpinner
 id select_dialog_listview
 id selected
 id selection_type
 id settingsButton
 id settingsList
 id settingsOverlay
+id settingsStatus
 id sharedValueSet
 id sharedValueUnset
 id shortcut
@@ -3979,6 +3992,8 @@ layout abc_search_view
 layout abc_select_dialog_material
 layout abc_tooltip
 layout activity_main
+layout cabin_spinner_dropdown_item
+layout cabin_spinner_item
 layout custom_dialog
 layout custom_spinner_dropdown_item
 layout custom_spinner_item
@@ -4007,6 +4022,7 @@ layout exo_styled_settings_list
 layout exo_styled_settings_list_item
 layout exo_styled_sub_settings_list_item
 layout exo_track_selection_dialog
+layout fragment_cabin_sense
 layout fragment_driver_safety
 layout fragment_gesture_control
 layout fragment_health_monitor
@@ -5621,3 +5637,4 @@ styleable ViewPager2 android_orientation
 styleable ViewStubCompat android_id android_layout android_inflatedId
 styleable ViewTransition android_id SharedValue SharedValueId clearsTag duration ifTagNotSet ifTagSet motionInterpolator motionTarget onStateTransition pathMotionArc setsTag transitionDisable upDuration viewTransitionMode
 styleable include constraintSet
+xml automotive_app_desc

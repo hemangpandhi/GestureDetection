@@ -1,7 +1,19 @@
 [
     {
+        "merged": "/home/hemang/.gradle/daemon/8.5/com.example.gesturecontrol.app-merged_res-43:/layout_activity_main.xml.flat",
+        "source": "/home/hemang/.gradle/daemon/8.5/com.example.gesturecontrol.app-main-45:/layout/activity_main.xml"
+    },
+    {
+        "merged": "/home/hemang/.gradle/daemon/8.5/com.example.gesturecontrol.app-merged_res-43:/layout_cabin_spinner_item.xml.flat",
+        "source": "/home/hemang/.gradle/daemon/8.5/com.example.gesturecontrol.app-main-45:/layout/cabin_spinner_item.xml"
+    },
+    {
         "merged": "/home/hemang/.gradle/daemon/8.5/com.example.gesturecontrol.app-merged_res-43:/layout_fragment_driver_safety.xml.flat",
         "source": "/home/hemang/.gradle/daemon/8.5/com.example.gesturecontrol.app-main-45:/layout/fragment_driver_safety.xml"
+    },
+    {
+        "merged": "/home/hemang/.gradle/daemon/8.5/com.example.gesturecontrol.app-merged_res-43:/layout_fragment_cabin_sense.xml.flat",
+        "source": "/home/hemang/.gradle/daemon/8.5/com.example.gesturecontrol.app-main-45:/layout/fragment_cabin_sense.xml"
     },
     {
         "merged": "/home/hemang/.gradle/daemon/8.5/com.example.gesturecontrol.app-merged_res-43:/layout_custom_spinner_dropdown_item.xml.flat",
@@ -12,10 +24,6 @@
         "source": "/home/hemang/.gradle/daemon/8.5/com.example.gesturecontrol.app-main-45:/layout/fragment_gesture_control.xml"
     },
     {
-        "merged": "/home/hemang/.gradle/daemon/8.5/com.example.gesturecontrol.app-merged_res-43:/layout_activity_main.xml.flat",
-        "source": "/home/hemang/.gradle/daemon/8.5/com.example.gesturecontrol.app-main-45:/layout/activity_main.xml"
-    },
-    {
         "merged": "/home/hemang/.gradle/daemon/8.5/com.example.gesturecontrol.app-merged_res-43:/layout_custom_spinner_item.xml.flat",
         "source": "/home/hemang/.gradle/daemon/8.5/com.example.gesturecontrol.app-main-45:/layout/custom_spinner_item.xml"
     },
@@ -24,8 +32,20 @@
         "source": "/home/hemang/.gradle/daemon/8.5/com.example.gesturecontrol.app-main-45:/drawable/bg_rounded.xml"
     },
     {
-        "merged": "com.example.gesturecontrol.app-merged_res-43:/layout_activity_main.xml.flat",
-        "source": "com.example.gesturecontrol.app-main-45:/layout/activity_main.xml"
+        "merged": "com.example.gesturecontrol.app-merged_res-43:/layout_cabin_spinner_item.xml.flat",
+        "source": "com.example.gesturecontrol.app-main-45:/layout/cabin_spinner_item.xml"
+    },
+    {
+        "merged": "/home/hemang/.gradle/daemon/8.5/com.example.gesturecontrol.app-merged_res-43:/xml_automotive_app_desc.xml.flat",
+        "source": "/home/hemang/.gradle/daemon/8.5/com.example.gesturecontrol.app-main-45:/xml/automotive_app_desc.xml"
+    },
+    {
+        "merged": "/home/hemang/.gradle/daemon/8.5/com.example.gesturecontrol.app-merged_res-43:/layout_cabin_spinner_dropdown_item.xml.flat",
+        "source": "/home/hemang/.gradle/daemon/8.5/com.example.gesturecontrol.app-main-45:/layout/cabin_spinner_dropdown_item.xml"
+    },
+    {
+        "merged": "com.example.gesturecontrol.app-merged_res-43:/layout_fragment_cabin_sense.xml.flat",
+        "source": "com.example.gesturecontrol.app-main-45:/layout/fragment_cabin_sense.xml"
     },
     {
         "merged": "/home/hemang/.gradle/daemon/8.5/com.example.gesturecontrol.app-merged_res-43:/layout_fragment_health_monitor.xml.flat",

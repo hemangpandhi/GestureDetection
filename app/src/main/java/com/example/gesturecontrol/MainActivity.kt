@@ -30,6 +30,16 @@ class MainActivity : AppCompatActivity() {
     private var gestureService: com.example.gesturecontrol.service.GestureService? = null
     private var isBound = false
     
+    // Driver Profile Data
+    data class DriverProfile(
+        val name: String,
+        val seatPosition: String,
+        val climateTemp: Int,
+        val mirrorSetting: String
+    )
+    
+    private val driverProfiles = mutableMapOf<String, DriverProfile>()
+
     // UI Components (Restored)
     private lateinit var previewView: android.widget.ImageView
     private lateinit var statusText: android.widget.TextView
@@ -116,6 +126,7 @@ class MainActivity : AppCompatActivity() {
                 0 -> "GESTURE CONTROL"
                 1 -> "BIOMETRIC VITALS"
                 2 -> "DRIVER SAFETY"
+                3 -> "CABIN SENSE"
                 else -> "TAB"
             }
         }.attach()
@@ -321,6 +332,21 @@ class MainActivity : AppCompatActivity() {
             appTitle.setTextColor(autoAccent)
             tabLayout.setTabTextColors(android.graphics.Color.parseColor("#888888"), autoAccent)
             tabLayout.setSelectedTabIndicatorColor(autoAccent)
+        }
+    }
+    
+    fun getDriverProfile(name: String): DriverProfile? {
+        return driverProfiles[name]
+    }
+
+    fun registerCurrentDriver(name: String, seat: String, climate: Int, mirror: String) {
+        if (isBound) {
+            // Save Profile
+            driverProfiles[name] = DriverProfile(name, seat, climate, mirror)
+            
+            // Register Logic
+            gestureService?.registerDriver(name)
+            android.widget.Toast.makeText(this, "Scanning Face for $name...", android.widget.Toast.LENGTH_SHORT).show()
         }
     }
 }

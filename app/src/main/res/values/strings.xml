@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Gesture Control</string>
+    <string name="app_name">Genesis Empathic Cockpit</string>
     <string name="status_searching">Searching for gestures...</string>
     <string name="status_connected">Camera Connected</string>
     <string name="status_disconnected">Camera Disconnected</string>

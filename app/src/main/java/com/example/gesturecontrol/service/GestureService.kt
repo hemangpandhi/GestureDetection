@@ -167,6 +167,10 @@ class GestureService : LifecycleService() {
         cameraStreamManager.startStream(url)
     }
     
+    fun registerDriver(name: String) {
+        gestureProcessor.registerDriver(name)
+    }
+    
     fun stopCamera() {
         cameraStreamManager.stop()
     }

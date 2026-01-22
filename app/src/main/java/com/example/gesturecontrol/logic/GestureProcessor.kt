@@ -19,7 +19,9 @@ data class GestureFeedback(
     val isNightMode: Boolean = false,
     val isSleeping: Boolean = false,
     val isDemoMode: Boolean = false,
-    val mood: String = "Neutral"
+    val mood: String = "Neutral",
+    val driverName: String = "Guest",
+    val passengerDetected: Boolean = false
 )
 
 class GestureProcessor(context: Context, private val listener: (GestureFeedback) -> Unit) {
@@ -30,6 +32,10 @@ class GestureProcessor(context: Context, private val listener: (GestureFeedback)
     var isDemoMode = true // Default for Customer Demo
     private var currentMood = "Neutral"
     private var frameCount = 0
+    
+    // ID State
+    private var driverName = "Guest"
+    private var passengerPresent = false
     
     // Shared Data for HealthProcessor
     var lastFaceResult: FaceLandmarkerResult? = null
@@ -71,7 +77,7 @@ class GestureProcessor(context: Context, private val listener: (GestureFeedback)
         val options = FaceLandmarker.FaceLandmarkerOptions.builder()
             .setBaseOptions(baseOptions)
             .setRunningMode(RunningMode.IMAGE)
-            .setNumFaces(1)
+            .setNumFaces(2)
             .setOutputFaceBlendshapes(true) // CRITICAL: Needed for mood (smile/frown) detection
             .build()
         try {
@@ -135,6 +141,49 @@ class GestureProcessor(context: Context, private val listener: (GestureFeedback)
         result?.let {
             if (it.faceBlendshapes().isPresent && it.faceBlendshapes().get().isNotEmpty()) {
                 val blendshapes = it.faceBlendshapes().get()[0]
+                
+                // --- DRIVER ID & PASSENGER LOGIC ---
+                // Reset defaults for this frame logic, but we need to persist them for processResult
+                var detectedDriver = "Guest"
+                var detectedPassenger = false
+                
+                // 1. Passenger Detection (Check if 2nd face exists)
+                if (it.faceLandmarks().size > 1) {
+                    detectedPassenger = true
+                }
+                
+                // 2. Driver Identification
+                if (it.faceLandmarks().isNotEmpty()) {
+                    val driverLandmarks = it.faceLandmarks()[0]
+                    val currentSig = extractFaceSignature(driverLandmarks)
+                    
+                    if (currentSig.isNotEmpty()) {
+                        if (registerNextFace) {
+                            registeredDrivers[pendingRegistrationName] = currentSig
+                            registerNextFace = false
+                            Log.d("GestureProcessor", "Driver Registered: $pendingRegistrationName")
+                        }
+                        
+                        // Check against all registered drivers
+                        var bestMatchName = "Guest"
+                        var bestMatchScore = 100f
+                        
+                        for ((name, savedSig) in registeredDrivers) {
+                             val diff = compareSignatures(currentSig, savedSig)
+                             Log.d("GestureProcessor", "Comparing with $name: diff=$diff")
+                             if (diff < 0.25f && diff < bestMatchScore) {
+                                 bestMatchScore = diff
+                                 bestMatchName = name
+                             }
+                        }
+                        
+                        detectedDriver = bestMatchName
+                    }
+                }
+                
+                // Store in class vars for listener
+                this.driverName = detectedDriver
+                this.passengerPresent = detectedPassenger
                 
                 // Scores
                 var smileScore = 0f
@@ -396,7 +445,7 @@ class GestureProcessor(context: Context, private val listener: (GestureFeedback)
                     )
                      if (distance < 0.05 && inDriverZone) {
                          if (score > activeThreshold) {
-                            listener(GestureFeedback("Pinch", score, "Privacy Toggled", positionHint, isNightMode, isSleeping, isDemoMode, currentMood))
+                            listener(GestureFeedback("Pinch", score, "Privacy Toggled", positionHint, isNightMode, isSleeping, isDemoMode, currentMood, driverName, passengerPresent))
                             lastWakeTime = currentTime 
                             return@let 
                         }
@@ -411,14 +460,14 @@ class GestureProcessor(context: Context, private val listener: (GestureFeedback)
                         if (currentTime - wakeHoldStartTime > 1000) { 
                             isSleeping = false
                             lastWakeTime = currentTime
-                            listener(GestureFeedback("WAKE UP", score, "System Active", positionHint, isNightMode, false, isDemoMode, currentMood))
+                            listener(GestureFeedback("WAKE UP", score, "System Active", positionHint, isNightMode, false, isDemoMode, currentMood, driverName, passengerPresent))
                         } else {
-                            listener(GestureFeedback("Possible Wake", score, "Hold to Wake...", positionHint, isNightMode, true, isDemoMode, currentMood))
+                            listener(GestureFeedback("Possible Wake", score, "Hold to Wake...", positionHint, isNightMode, true, isDemoMode, currentMood, driverName, passengerPresent))
                         }
                     } else {
                         wakeHoldStartTime = 0L 
                         if (inDriverZone) {
-                             listener(GestureFeedback("SLEEPING", score, "Show Palm to Wake", positionHint, isNightMode, true, isDemoMode, currentMood))
+                             listener(GestureFeedback("SLEEPING", score, "Show Palm to Wake", positionHint, isNightMode, true, isDemoMode, currentMood, driverName, passengerPresent))
                         }
                     }
                     return@let 
@@ -427,26 +476,68 @@ class GestureProcessor(context: Context, private val listener: (GestureFeedback)
                 lastWakeTime = currentTime 
                 
                 if (!inDriverZone) {
-                    listener(GestureFeedback("None", 0f, "Ignored (Passenger)", positionHint, isNightMode, isSleeping, isDemoMode, currentMood))
+                    listener(GestureFeedback("None", 0f, "Ignored (Passenger)", positionHint, isNightMode, isSleeping, isDemoMode, currentMood, driverName, passengerPresent))
                     return@let
                 }
                 
                 if (isStatic) {
-                     listener(GestureFeedback("None", score, "Ignored (Static/Wheel)", positionHint, isNightMode, isSleeping, isDemoMode, currentMood))
+                     listener(GestureFeedback("None", score, "Ignored (Static/Wheel)", positionHint, isNightMode, isSleeping, isDemoMode, currentMood, driverName, passengerPresent))
                      return@let
                 }
 
                 val feedbackMsg = if (score > 0.8) "Excellent" else "Good"
 
                 if (score > activeThreshold) {
-                    listener(GestureFeedback(category, score, feedbackMsg, positionHint, isNightMode, isSleeping, isDemoMode, currentMood))
+                    listener(GestureFeedback(category, score, feedbackMsg, positionHint, isNightMode, isSleeping, isDemoMode, currentMood, driverName, passengerPresent))
                 }
             } else {
                  wakeHoldStartTime = 0L
                  // Send update even if no hand, so Mood is updated!
-                 listener(GestureFeedback("None", 0f, " ", "No Hand", isNightMode, isSleeping, isDemoMode, currentMood))
+                 listener(GestureFeedback("None", 0f, " ", "No Hand", isNightMode, isSleeping, isDemoMode, currentMood, driverName, passengerPresent))
             }
         }
+    }
+    
+    // Driver ID Logic
+    private val registeredDrivers = mutableMapOf<String, List<Float>>()
+    private var pendingRegistrationName: String = "Guest"
+    private var registerNextFace = false
+
+    fun registerDriver(name: String) {
+        pendingRegistrationName = name
+        registerNextFace = true
+    }
+
+    private fun extractFaceSignature(landmarks: List<com.google.mediapipe.tasks.components.containers.NormalizedLandmark>): List<Float> {
+        // Simple Euclidean distances between key points
+        fun dist(i1: Int, i2: Int): Float {
+            if (i1 >= landmarks.size || i2 >= landmarks.size) return 0f
+            val p1 = landmarks[i1]
+            val p2 = landmarks[i2]
+            return Math.sqrt(Math.pow((p1.x() - p2.x()).toDouble(), 2.0) + Math.pow((p1.y() - p2.y()).toDouble(), 2.0)).toFloat()
+        }
+
+        val eyeDist = dist(33, 263)
+        if (eyeDist < 0.01f) return emptyList() // Avoid div by zero
+
+        // Normalized Ratios - More features for better accuracy
+        val v1 = dist(1, 152) / eyeDist   // Nose to chin
+        val v2 = dist(1, 33) / eyeDist    // Nose to left eye
+        val v3 = dist(1, 263) / eyeDist   // Nose to right eye
+        val v4 = dist(61, 291) / eyeDist  // Mouth width
+        val v5 = dist(10, 152) / eyeDist  // Forehead to chin
+        val v6 = dist(234, 454) / eyeDist // Face width at cheeks
+        
+        return listOf(v1, v2, v3, v4, v5, v6)
+    }
+
+    private fun compareSignatures(sig1: List<Float>, sig2: List<Float>): Float {
+        if (sig1.size != sig2.size) return 100f
+        var diff = 0f
+        for (i in sig1.indices) {
+            diff += Math.abs(sig1[i] - sig2[i])
+        }
+        return diff
     }
     
     fun close() {

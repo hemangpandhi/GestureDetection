@@ -44,9 +44,17 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.GestureControl"
         android:usesCleartextTraffic="true" >
+        <meta-data
+            android:name="com.android.automotive"
+            android:resource="@xml/automotive_app_desc" />
+
         <activity
             android:name="com.example.gesturecontrol.MainActivity"
             android:exported="true" >
+            <meta-data
+                android:name="distractionOptimized"
+                android:value="true" />
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
