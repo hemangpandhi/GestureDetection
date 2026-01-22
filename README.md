@@ -61,19 +61,6 @@ The application follows a robust **MVVM (Model-View-ViewModel)** pattern coupled
 *   **Concurrency**: Kotlin Coroutines (Async signal processing)
 *   **Service Layer**: `GestureService` (Foreground Service) - Keeps AI logic alive even when UI is backgrounded.
 *   **UI Toolkit**: XML Layouts, `ViewPager2`, Custom Views (`LineGraphView`).
-*   **State Management**: `LiveData` shared via `activityViewModels`.
-
----
-
-## 3. Core Functionalities & Logic
-
-### A. Gesture Control System
-*   **Input**: Camera Frames -> MediaPipe Hands -> 21 Landmarks.
-*   **Logic**:
-    *   **Dynamic Thresholding**: Adapts recognition sensitivity based on `Palm Size` implies the system works reliably whether the hand is near the wheel or the dash.
-    *   **Vector Analysis**: Calculates relative distance between specific nodes (e.g., Thumb Tip vs. Index Tip) to distinguish "Pinch" from "Open".
-    *   **Mapping**: "Two Fingers Right" -> **Next Track**, "Open Palm" -> **Play/Pause**.
-
 ### B. Advanced Driver Monitoring System (DMS)
 *   **Input**: Camera Frames -> MediaPipe Face Blendshapes.
 *   **States Detected**:
