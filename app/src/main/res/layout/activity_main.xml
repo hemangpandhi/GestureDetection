@@ -22,7 +22,7 @@
             android:id="@+id/appTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="GENESIS GESTURE CONTROL"
+            android:text="GENESIS EMPATHIC COCKPIT"
             android:textColor="@color/auto_accent"
             android:textSize="36sp"
             android:textStyle="bold"

@@ -1,4 +1,4 @@
-# Genesis Gesture Control & Biometric Cockpit
+# Genesis Empathic Cockpit
 **Automotive World 2026 Demo Application**
 
 ## 1. Executive Summary
