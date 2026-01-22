@@ -29,7 +29,6 @@ The system uses **Google MediaPipe** for all geometric understanding of the driv
     *   **Pain/Discomfort**: `noseSneerLeft` + `noseSneerRight`.
     *   **Frustration**: `cheekPuff`.
     *   **Skepticism**: `eyeSquintLeft` + `eyeSquintRight` (Squinting without smiling).
-    *   **Engagement (Speaking)**: `mouthOpen` (>0.1) vs `jawOpen` (>0.45 for Surprise).
     *   **Winking**: `eyeBlinkLeft` vs `eyeBlinkRight` (Asymmetric blinking).
 
 ---

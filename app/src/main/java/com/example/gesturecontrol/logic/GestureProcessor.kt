@@ -230,8 +230,6 @@ class GestureProcessor(context: Context, private val listener: (GestureFeedback)
                         newState = "Sad :("
                     } else if (jawOpenScore > 0.45) { // Raised threshold for Surprise
                         newState = "Surprised :O"
-                    } else if (jawOpenScore > 0.1) { // Lower threshold for speaking
-                        newState = "Speaking..."
                     } else if (eyeBlinkLeftScore > 0.5 && eyeBlinkRightScore < 0.2) {
                         newState = "Winking (Left)"
                     } else if (eyeBlinkRightScore > 0.5 && eyeBlinkLeftScore < 0.2) {
